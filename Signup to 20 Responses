@@ -1,0 +1,2 @@
+# Find average time from when merchants sign up to when they get 20 responses on the survey
+SELECT DISTINCT survey_id FROM public.survey_responses;
