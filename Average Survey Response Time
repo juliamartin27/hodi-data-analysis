@@ -1,0 +1,2 @@
+# Find the average time between when the survey is displayed until response is submitted
+SELECT AVG(EXTRACT (SECOND FROM updated_at - inserted_at)) FROM public.survey_responses;
