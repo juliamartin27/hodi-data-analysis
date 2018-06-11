@@ -1,0 +1,3 @@
+# Find Monthly Recurring Revenue by billing date with billing date format YYYY-MM-DD
+SELECT EXTRACT(MONTH FROM billing_on), SUM(price) FROM public.usage_charges
+GROUP BY date_part;
