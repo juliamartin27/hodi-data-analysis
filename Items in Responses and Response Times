@@ -1,14 +1,4 @@
 # Compare how the number of possible responses to survey corresponds to survey response time
 # First find the number of responses for each individual survey id
-WITH cte AS (
-SELECT
-	CASE
-		WHEN item in responses '[0-9]' THEN CAST(item AS decimal) -- cast to numeric field
-	END AS num_responses,
-	CASE
-		WHEN item in responses ~ '[a-zA-Z]' THEN item
-	END AS a
-FROM public.surveys
-)
-SELECT (LENGTH(responses) - LENGTH(REPLACE(responses, ',', '')) + 1) AS response_count
+SELECT array_length(responses, 1)
 FROM public.surveys;
