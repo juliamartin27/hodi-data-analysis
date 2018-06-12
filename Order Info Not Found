@@ -1,4 +1,5 @@
-# How many times per day does the survey not show up after purchase with the error reason 'Order Info not found'?
+# How many times per day does the survey not show up after purchase with the error reason 'Order Info not found' (showing info for
+# 06/05/2018 - 06/12/2018)?
 SELECT COUNT(*), 
 date_trunc('day', inserted_at) AS day
 FROM public.analytics_events
