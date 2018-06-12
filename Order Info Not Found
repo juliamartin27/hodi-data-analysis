@@ -1,0 +1,7 @@
+# How many times per day does the survey not show up after purchase with the error reason 'Order Info not found'?
+SELECT COUNT(*), 
+date_trunc('day', inserted_at) AS day
+FROM public.analytics_events
+WHERE context ->> 'reason' = 'Order information not found'
+AND inserted_at >= '2018-06-05'
+GROUP BY date_trunc('day', inserted_at);
