@@ -1,3 +1,8 @@
 # Find average time from when merchants sign up to when they get 20 responses on the survey
 SELECT DISTINCT survey_id FROM public.survey_responses;
 # join on shops and survey responses inserted_at
+
+SELECT DISTINCT shops.id, shops.name, (shops.updated_at - shops.inserted_at) 
+FROM public.shops
+FULL JOIN public.analytics_events
+ON public.shops.id = public.analytics_events.ref_id;
