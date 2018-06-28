@@ -1,2 +1,7 @@
 # Find the average time between when the survey is displayed until response is submitted
 SELECT AVG(EXTRACT (SECOND FROM updated_at - inserted_at)) FROM public.survey_responses;
+
+SELECT (survey_responses.updated_at - analytics_events.inserted_at) 
+FROM public.survey_responses
+JOIN public.analytics_events
+ON public.survey_responses.customer_name = public.analytics_events.name;
