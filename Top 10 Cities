@@ -1,0 +1,6 @@
+Top 10 cities (viewed survey, no response vs. viewed survey, response)
+SELECT jsonb_extract_path_text(context, 'city'), COUNT(*)
+FROM public.analytics_events
+GROUP BY jsonb_extract_path_text(context, 'city')
+HAVING COUNT(*) > 1
+ORDER BY COUNT(*) DESC;
