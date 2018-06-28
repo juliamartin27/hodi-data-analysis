@@ -4,4 +4,4 @@ SELECT AVG(EXTRACT (SECOND FROM updated_at - inserted_at)) FROM public.survey_re
 SELECT (survey_responses.updated_at - analytics_events.inserted_at) 
 FROM public.survey_responses
 JOIN public.analytics_events
-ON public.survey_responses.customer_name = public.analytics_events.name;
+ON public.survey_responses.id = public.analytics_events.ref_id;
