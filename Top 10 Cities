@@ -4,3 +4,5 @@ FROM public.analytics_events
 GROUP BY jsonb_extract_path_text(context, 'city')
 HAVING COUNT(*) > 1
 ORDER BY COUNT(*) DESC;
+
+analytics_events.ref_id::bigint = survey_responses.order_id
