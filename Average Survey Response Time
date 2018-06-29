@@ -6,7 +6,4 @@ FROM public.survey_responses
 JOIN public.analytics_events
 ON public.survey_responses.id = public.analytics_events.ref_id;
 
-#responses are associated with shops in surveys
-join in surveys where survey_response.survey_id = surveys.id
-surveys.shops_id = shops.id
-100th response where it's inserted at is compared to the shops inserted at
+sort by inserted_at ascending so you get the earliest event after partitioning by the ref_id, use that first on
