@@ -6,3 +6,46 @@ HAVING COUNT(*) > 1
 ORDER BY COUNT(*) DESC;
 
 analytics_events.ref_id::bigint = survey_responses.order_id
+
+WITH
+	cities AS (
+		SELECT context->>'city' AS city,
+		context->>'shop_id' AS shopid
+		FROM public.analytics_events
+		),
+	views AS (
+		SELECT
+			DISTINCT ON (ref_id) ref_id,
+			CASE WHEN context->>'order_total' IS NULL THEN 0
+			ELSE cast(context->>'order_total' AS NUMERIC)
+			END AS total,
+				context->>'shop_id' AS shop_id
+		FROM public.analytics_events
+		),
+	view_counts AS (
+			SELECT COUNT(DISTINCT ref_id) AS views, SUM(total)
+			AS volume, shop_id
+			FROM views
+			GROUP BY shop_id
+		),
+	response_counts AS (
+			SELECT COUNT(survey_responses.id) AS responses,
+			surveys.shop_id AS shop_id, surveys.question, 
+			surveys.id AS surveyid
+		
+			FROM public.survey_responses
+			LEFT JOIN public.surveys
+			ON surveys.id = survey_responses.survey_id
+			GROUP BY surveys.shop_id, surveys.question, surveyid
+		)
+SELECT
+	name,
+	CASE WHEN views IS NULL THEN 0 ELSE views END,
+	CASE WHEN responses IS NULL THEN 0 ELSE responses END,
+	city,
+	COUNT(*)
+FROM public.shops
+LEFT JOIN view_counts ON shops.id = view_counts.shop_id
+LEFT JOIN response_counts ON shops.id = response_counts.shop_id
+LEFT JOIN cities on shops.id = cities.shopid
+GROUP BY name, city;
