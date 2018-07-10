@@ -13,12 +13,6 @@ WITH
 			context->>'shop_id' AS shopid
 		FROM public.analytics_events
 		),
-	city_counts AS (
-		SELECT context->>'shop_id' AS shopids, context->>'city', COUNT(*) AS city_count
-		FROM public.analytics_events
-		GROUP BY shopids, context->>'city'
-		HAVING COUNT(*) > 1
-		),
 	views AS (
 		SELECT
 			DISTINCT ON (ref_id) ref_id,
@@ -48,11 +42,11 @@ SELECT
 	name,
 	CASE WHEN views IS NULL THEN 0 ELSE views END,
 	CASE WHEN responses IS NULL THEN 0 ELSE responses END,
-	city,
-	city_count
+	city, COUNT(*)
 FROM public.shops
 LEFT JOIN view_counts ON shops.id = view_counts.shop_id
 LEFT JOIN response_counts ON shops.id = response_counts.shop_id
 LEFT JOIN cities on shops.id = cities.shopid
-LEFT JOIN city_counts ON shops.id = city_counts.shopids
-ORDER BY name;
+GROUP BY name, views, responses, city
+HAVING COUNT(*) > 0
+ORDER BY name, COUNT(*) DESC;
