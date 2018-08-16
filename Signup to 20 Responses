@@ -12,3 +12,7 @@ ON public.shops.id = public.analytics_events.ref_id;
 join in surveys where survey_response.survey_id = surveys.id
 surveys.shops_id = shops.id
 100th response where it's inserted at is compared to the shops inserted at
+
+# distinct times each survey was inserted, sorted by shop_id
+SELECT DISTINCT(inserted_at, context->>'shop_id')
+FROM public.analytics_events;
