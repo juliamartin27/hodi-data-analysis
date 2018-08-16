@@ -16,3 +16,8 @@ surveys.shops_id = shops.id
 # distinct times each survey was inserted, sorted by shop_id
 SELECT DISTINCT(inserted_at, context->>'shop_id')
 FROM public.analytics_events;
+
+
+SELECT id, responses, shop_id FROM public.surveys
+GROUP BY id, shop_id
+HAVING COUNT(shop_id) > 0;
