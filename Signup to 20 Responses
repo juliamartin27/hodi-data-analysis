@@ -31,7 +31,7 @@ FROM public.analytics_events;
 
 WITH
 	customer_responses AS (
-		SELECT inserted_at, (context->>'shop_id')::character AS jshop_id
+		SELECT inserted_at, (context->>'shop_id')::character(21) AS jshop_id
 		FROM public.analytics_events
 		),
 	shop_surveys AS (
@@ -42,5 +42,12 @@ WITH
     	LEFT JOIN public.survey_responses
     	ON survey_responses.survey_id = surveys.id
 		)
-SELECT * FROM customer_responses
-LEFT JOIN shop_surveys ON customer_responses.shop_id = shop_surveys.shop_id;
+SELECT
+	customer_responses.inserted_at,
+	jshop_id,
+	COUNT(*)
+FROM customer_responses
+LEFT JOIN shop_surveys ON customer_responses.jshop_id = shop_surveys.shop_id
+GROUP BY jshop_id, customer_responses.inserted_at
+HAVING COUNT(*) > 0
+LIMIT 100;
