@@ -51,3 +51,26 @@ LEFT JOIN shop_surveys ON customer_responses.jshop_id = shop_surveys.shop_id
 GROUP BY jshop_id, customer_responses.inserted_at
 HAVING COUNT(*) > 0
 LIMIT 100;
+
+WITH
+	survey_ids AS (
+		SELECT surveys.id AS ind_surv, surveys.inserted_at AS ind_surv_ins,
+		surveys.shop_id AS ind_shop, survey_responses.inserted_at
+		FROM public.surveys
+		FULL JOIN public.survey_responses
+		ON survey_responses.survey_id = surveys.id
+	),
+	shops_ids AS (
+		SELECT * FROM public.surveys
+		FULL JOIN public.shops
+		ON surveys.shop_id = shops.id
+	),
+	survey_response_times AS (
+		SELECT survey_responses.inserted_at AS response_times
+		FROM public.survey_responses
+	)
+SELECT response_times, ind_surv, ind_surv_ins, ind_shop
+FROM survey_response_times
+FULL JOIN survey_ids ON survey_ids.inserted_at = survey_response_times.response_times
+FULL JOIN shops_ids ON survey_ids.ind_shop = shops_ids.shop_id
+ORDER BY shops_ids.shop_id;
