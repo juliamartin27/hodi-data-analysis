@@ -21,3 +21,26 @@ FROM public.analytics_events;
 SELECT id, responses, shop_id FROM public.surveys
 GROUP BY id, shop_id
 HAVING COUNT(shop_id) > 0;
+
+SELECT * FROM public.surveys
+FULL JOIN public.survey_responses 
+ON survey_responses.survey_id = surveys.id;
+
+SELECT DISTINCT(inserted_at, context->>'shop_id')
+FROM public.analytics_events;
+
+WITH
+	customer_responses AS (
+		SELECT inserted_at, (context->>'shop_id')::character AS jshop_id
+		FROM public.analytics_events
+		),
+	shop_surveys AS (
+		SELECT surveys.id, surveys.shop_id, surveys.inserted_at, surveys.updated_at,
+    	survey_responses.id, survey_responses.survey_id, survey_responses.inserted_at,
+    	survey_responses.updated_at 
+    	FROM public.surveys
+    	LEFT JOIN public.survey_responses
+    	ON survey_responses.survey_id = surveys.id
+		)
+SELECT * FROM customer_responses
+LEFT JOIN shop_surveys ON customer_responses.shop_id = shop_surveys.shop_id;
