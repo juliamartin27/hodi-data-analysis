@@ -29,32 +29,11 @@ ON survey_responses.survey_id = surveys.id;
 SELECT DISTINCT(inserted_at, context->>'shop_id')
 FROM public.analytics_events;
 
-WITH
-	customer_responses AS (
-		SELECT inserted_at, (context->>'shop_id')::character(21) AS jshop_id
-		FROM public.analytics_events
-		),
-	shop_surveys AS (
-		SELECT surveys.id, surveys.shop_id, surveys.inserted_at, surveys.updated_at,
-    	survey_responses.id, survey_responses.survey_id, survey_responses.inserted_at,
-    	survey_responses.updated_at 
-    	FROM public.surveys
-    	LEFT JOIN public.survey_responses
-    	ON survey_responses.survey_id = surveys.id
-		)
-SELECT
-	customer_responses.inserted_at,
-	jshop_id,
-	COUNT(*)
-FROM customer_responses
-LEFT JOIN shop_surveys ON customer_responses.jshop_id = shop_surveys.shop_id
-GROUP BY jshop_id, customer_responses.inserted_at
-HAVING COUNT(*) > 0
-LIMIT 100;
+
 
 WITH
 	survey_ids AS (
-		SELECT surveys.id AS ind_surv, surveys.inserted_at AS ind_surv_ins,
+		SELECT DISTINCT surveys.id AS ind_surv, surveys.inserted_at AS ind_surv_ins,
 		surveys.shop_id AS ind_shop, survey_responses.inserted_at
 		FROM public.surveys
 		FULL JOIN public.survey_responses
@@ -68,9 +47,19 @@ WITH
 	survey_response_times AS (
 		SELECT survey_responses.inserted_at AS response_times
 		FROM public.survey_responses
+	),
+	counted AS (
+		SELECT ind_shop, (survey_ids.inserted_at - ind_surv_ins) AS time,
+		ROW_NUMBER() OVER (PARTITION BY ind_shop ORDER BY (survey_ids.inserted_at - ind_surv_ins) ASC) AS response_counts
+		FROM survey_ids
+		GROUP BY ind_shop, time
 	)
-SELECT response_times, ind_surv, ind_surv_ins, ind_shop
+SELECT response_times, ind_surv, ind_surv_ins, survey_ids.ind_shop,
+	(response_times - ind_surv_ins) AS time, response_counts, COUNT(*)
 FROM survey_response_times
 FULL JOIN survey_ids ON survey_ids.inserted_at = survey_response_times.response_times
 FULL JOIN shops_ids ON survey_ids.ind_shop = shops_ids.shop_id
-ORDER BY shops_ids.shop_id;
+FULL JOIN counted ON counted.ind_shop = survey_ids.ind_shop
+GROUP BY response_counts, response_times, ind_surv, ind_surv_ins, survey_ids.ind_shop, time
+HAVING COUNT(*) > 0
+ORDER BY ind_shop, survey_response_times.response_times;
