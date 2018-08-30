@@ -4,6 +4,28 @@ SELECT AVG(EXTRACT (SECOND FROM updated_at - inserted_at)) FROM public.survey_re
 SELECT (survey_responses.updated_at - analytics_events.inserted_at) 
 FROM public.survey_responses
 JOIN public.analytics_events
-ON public.survey_responses.id = public.analytics_events.ref_id;
+ON public.survey_responses.id = public.analytics_events.ref_id
+WHERE ref_type = 'shop_id';
 
 sort by inserted_at ascending so you get the earliest event after partitioning by the ref_id, use that first on
+
+SELECT (survey_responses.updated_at - analytics_events.inserted_at) 
+FROM public.survey_responses
+JOIN public.analytics_events
+ON public.survey_responses.order_total = public.analytics_events.context->>'order_total' :: numeric(20,2);
+
+SELECT * 
+FROM public.survey_responses
+JOIN public.analytics_events
+ON public.survey_responses.customer_name = public.analytics_events.name;
+
+WITH
+	new_analytics AS (
+		SELECT id, context, inserted_at, updated_at, CAST(ref_id AS character(21))
+		FROM public.analytics_events
+		WHERE ref_type = 'shop_id'
+	)
+SELECT (survey_responses.updated_at - new_analytics.inserted_at)
+FROM public.survey_responses
+JOIN new_analytics
+ON survey_responses.id = new_analytics.ref_id;
