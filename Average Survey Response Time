@@ -29,3 +29,31 @@ SELECT (survey_responses.updated_at - new_analytics.inserted_at)
 FROM public.survey_responses
 JOIN new_analytics
 ON survey_responses.id = new_analytics.ref_id;
+
+
+SELECT analytics_events.inserted_at, surveys.id, responses, surveys.inserted_at
+FROM analytics_events
+JOIN surveys
+ON analytics_events.ref_id = surveys.shop_id
+WHERE ref_type = 'shop_id';
+
+
+
+WITH
+	new_analytics AS (
+		SELECT analytics_events.inserted_at AS initial_time, surveys.id AS surv_id
+		FROM analytics_events
+		JOIN surveys
+		ON analytics_events.ref_id = surveys.shop_id
+		WHERE ref_type = 'shop_id'
+	),
+	new_responses AS (
+		SELECT survey_responses.updated_at AS final_time, survey_id
+		FROM survey_responses
+		JOIN surveys
+		ON survey_responses.survey_id = surveys.id
+	)
+SELECT EXTRACT (SECOND FROM new_analytics.initial_time - new_responses.final_time)
+FROM new_analytics
+JOIN new_responses
+ON new_analytics.surv_id = new_responses.survey_id;
